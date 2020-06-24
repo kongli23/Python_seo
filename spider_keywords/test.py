@@ -1,8 +1,10 @@
 import requests
 from lxml import etree
-import threading
 import time
+from threading import Thread
+from threading import Lock
 
+look = Lock()
 initial = ['seo优化','seo推广']
 contain = ['seo','网站优化']
 existed = []
@@ -28,22 +30,35 @@ def parse_html(html):
                 # 过滤已采集过的词
                 if key not in existed:
                     initial.append(key) #此处可以保存
-                    print('新词：{}'.format(key))
+                    # print('新词：{}'.format(key))
+
+                    look.acquire()
+                    with open('key.txt', "a", encoding='utf-8') as file:
+                        file.write(key+'\n')
+                    look.release()
     return initial
-if __name__ == '__main__':
+
+def main():
     # url = 'https://www.baidu.com/s?wd=seo&pn=10'
-    # keyList = getHtml(url)
-    # print(keyList)
-    for index,key in enumerate(initial):
-        print('正在采集：{}'.format(key))
-        print('当前词数：{}'.format(len(initial)))
+    threads = []
+    for index, key in enumerate(initial):
+        # print('正在采集：{}'.format(key))
+        # print('当前词数：{}'.format(len(initial)))
         url = 'https://www.baidu.com/s?wd={0}&pn=10'.format(key)
-        keyList = getHtml(url)
-        # threading.Thread(target=getHtml,args=(url,)).start()
-        # print('{0}：采集完成，现总数：{1}'.format(key,len(initial)))
-        #采集过的都存储起来
+        # getHtml(url)
+        th = Thread(target=getHtml,args=(url,))
+        th.start()
+        th.join()
+        # threads.append(th)
+
+        # 采集过的都存储起来
         existed.append(key)
 
         # 采过的删除
         initial.pop(index)
-        time.sleep(0.3)
+        print('{0}：采集完成，现总数：{1}'.format(key, len(initial)))
+
+    # for th in threads:
+    #     th.join()
+if __name__ == '__main__':
+    main()
