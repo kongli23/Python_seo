@@ -12,7 +12,7 @@ from googletrans import Translator
 
 def google_fanyi(text):
     translator = Translator(service_urls=['translate.google.cn'])
-    transed_content = translator.translate(text, dest='en').text
+    transed_content = translator.translate(text, dest='EN').text    #en
     return transed_content
 
 if __name__ == '__main__':

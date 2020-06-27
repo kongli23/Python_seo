@@ -10,6 +10,7 @@ def fanyi_content(text):
     '''
     # 使用谷歌将中文翻译英文
     en_text = google_fanyi(text)
+    print('google:',en_text)
 
     # 使用百度将英文翻译中文
     dt = Dict()
