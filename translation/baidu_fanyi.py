@@ -1,6 +1,7 @@
 import execjs   #使用它，得安装另一个库 pip install PyExecJS
 import requests
 import re
+import json
 
 JS_CODE = """
 function a(r, o) {
@@ -140,8 +141,17 @@ class Dict:
             raise e
 
         if r.status_code == 200:
-            json = r.json()
-            return json["trans_result"]["data"][0]['dst']
+            js = json.loads(r.text)
+
+            text = ''
+            for dst in js['trans_result']['data']:
+                result = dst['result']
+                for res in result:
+                    # print(res)
+                    text += str(res[1])+str(res[3])
+            text = text.replace('[]','')
+            text = text.replace(r"['1|\n']",'\n\n')
+            return text
         return None
 
     def baidu_fanyi(self, text):
@@ -150,7 +160,25 @@ class Dict:
 
 if __name__ == '__main__':
     text = '''
-    <p>When I came to seo from an unknown field, I feel that the search engine is amazing. I have been in contact with seo for a long time. There are work contents that must be done every day. A large number of seo practitioners have similar work contents every day. View the ranking of keywords on the website, the situation of the website collection, the content of the organization, the distribution of external links, analysis of competitor data and seo practices, etc. </p>
+    Active push is to put a string of JS code on each page of the site. When the user visits, the code will be triggered, and SEO outsourcing will submit the page URL to Baidu. It is a very convenient and worry-free SEO optimized link push method.
+
+ 
+
+New site SEO optimization pages that want to be ranked should have a lot of internal links connected to them. Intranet with strong correlation can not only improve the entry, but also increase the weight score of the page. External links, through a large number of external links to point to the pages you want to participate in ranking, to reach user referrals, is also a very good way.
+
+ 
+
+With the active push code installed, the website only needs to have visitors to push the address to Baidu, and the spider will get the information at the first moment, thereby facilitating crawling and entry.
+
+ 
+
+SEO optimized articles must be depicted around the long-tailed words of the title, showing the dry goods to the user. The longer the user stays, the better the ranking will be. Recommended reading: If you want to expand your website’s popularity, SEO optimization starts here
+
+ 
+
+The structure of the website is simple and clear, and its ability is conducive to spider crawling. SEO outsourcing If the page calls a lot of JS, the Iframe framework tends to grow, because spiders can't fully read its content, the frame structure should use "DIV+CSS" for layout.
+
+Set the link to actively push, let the spider find your website the first time
     '''
     dt = Dict()
     res = dt.baidu_fanyi(text)
