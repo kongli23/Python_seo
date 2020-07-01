@@ -23,10 +23,11 @@ class Downloader():
         return html
 
 class Spider_related(threading.Thread,Downloader):
-    def __init__(self,keyList_queue,writer):
+    def __init__(self,keyList_queue,writer,contain):
         super(Spider_related, self).__init__()
         self.keyList_queue = keyList_queue
         self.writer = writer
+        self.contain = contain
 
         # 可自动扩容的布隆过滤器
         self.bloom = ScalableBloomFilter(initial_capacity=100, error_rate=0.001)
@@ -60,16 +61,32 @@ class Spider_related(threading.Thread,Downloader):
         ele = etree.HTML(source)
         keyList = ele.xpath('//table//tr//th/a/text()')
         for key in keyList:
-            self.writer.write('{}\n'.format(key))
-            self.keyList_queue.put(key)
-            print('新词：{}'.format(key))
+            contain = ['seo','网站优化']
+            for con in self.contain:
+                if con in key:
+                    self.writer.write('{}\n'.format(key))
+                    self.keyList_queue.put(key)
+                    print('新词：{}'.format(key))
 
 if __name__ == '__main__':
+    init = []
+    with open('init.txt','r',encoding='utf-8') as file:
+        for key in file:
+            init.append(key.strip())
+
+    contain = []
+    with open('contain.txt','r',encoding='utf-8') as file:
+        for key in file:
+            contain.append(key.strip())
+
     keyList_queue = Queue()
-    keyList_queue.put('seo')
+
+    for ini in init:
+        keyList_queue.put(ini)
+
     sf = open('spider_key.txt',mode='w',encoding='utf-8')
     for i in range(15):
-        related = Spider_related(keyList_queue,sf)
+        related = Spider_related(keyList_queue,sf,contain)
         related.setDaemon(True)
         related.start()
         time.sleep(0.1)
