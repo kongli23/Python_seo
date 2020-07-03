@@ -61,12 +61,15 @@ class Spider_related(threading.Thread,Downloader):
         ele = etree.HTML(source)
         keyList = ele.xpath('//table//tr//th/a/text()')
         for key in keyList:
-            contain = ['seo','网站优化']
+
             for con in self.contain:
                 if con in key:
-                    self.writer.write('{}\n'.format(key))
-                    self.keyList_queue.put(key)
-                    print('新词：{}'.format(key))
+                    if key in self.bloom:
+                        return
+                    else:
+                        self.writer.write('{}\n'.format(key))
+                        self.keyList_queue.put(key)
+                        print('新词：{}'.format(key))
 
 if __name__ == '__main__':
     init = []
