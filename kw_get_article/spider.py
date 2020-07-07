@@ -7,6 +7,7 @@ import re
 from queue import Queue
 from bluextracter import Extractor
 import pymysql
+from translation.content_fanyi import fanyi_content
 
 class Search_key(Thread):
     '''
@@ -133,7 +134,9 @@ class Down_article(Thread):
         ex.extract(url, source)
         if ex.score > 10000 and len(ex.title) > 10:
             title = ex.title
-            content = ex.format_text
+            tag_content = ex.format_text
+            print('得到内容，正在翻译')
+            content = fanyi_content(tag_content)
             is_success = False
 
             try:

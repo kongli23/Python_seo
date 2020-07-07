@@ -76,13 +76,15 @@ class Filter_key(Thread):
             for con in self.contain:
                 if con in wd:
 
-                    # 符合包含词再进行去重
-                    if wd in self.bloom:
-                        continue
-                    self.bloom.add(wd)
-                    print('得到新词：{}'.format(wd))
-                    self.save_file(wd)
-                    self.save_queue.task_done()
+                    # 关键词长度大于4个字才保存
+                    if len(wd) > 10:
+                        # 符合包含词再进行去重
+                        if wd in self.bloom:
+                            continue
+                        self.bloom.add(wd)
+                        print('得到新词：{}'.format(wd))
+                        self.save_file(wd)
+                        self.save_queue.task_done()
 
     # 保存文件函数
     def save_file(self,wd):

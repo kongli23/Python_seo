@@ -14,6 +14,8 @@ def fanyi_content(text):
     # 使用百度将英文翻译中文
     dt = Dict()
     cn_text = dt.baidu_fanyi(en_text)
+    cn_text = cn_text.replace('“','"')
+    cn_text = cn_text.replace('”','"')
     return cn_text
 
 if __name__ == '__main__':
