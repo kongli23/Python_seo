@@ -144,14 +144,18 @@ class Dict:
             js = json.loads(r.text)
 
             text = ''
-            for dst in js['trans_result']['data']:
-                result = dst['result']
-                for res in result:
-                    # print(res)
-                    text += str(res[1])+str(res[3])
-            text = text.replace('[]','')
-            text = text.replace(r"['1|\n']",'\n\n')
-            return text
+            try:
+                for dst in js['trans_result']['data']:
+                    result = dst['result']
+                    for res in result:
+                        # print(res)
+                        text += str(res[1]) + str(res[3])
+                text = text.replace('[]', '')
+                text = text.replace(r"['1|\n']", '\n\n')
+                return text
+            except Exception as err:
+                print('翻译异常：{}'.format(err))
+                return None
         return None
 
     def baidu_fanyi(self, text):

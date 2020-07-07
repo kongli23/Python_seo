@@ -1,4 +1,4 @@
-from bluextracter import Extractor
+from kw_get_article.extractor import Extractor
 import requests
 import re
 from kw_get_article.article_filter import content_filter

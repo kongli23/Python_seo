@@ -8,14 +8,22 @@ def fanyi_content(text):
     :param text: 要翻译的p标签
     :return: 返回翻译后的中文
     '''
-    # 使用谷歌将中文翻译英文
-    en_text = google_fanyi(text)
 
-    # 使用百度将英文翻译中文
-    dt = Dict()
-    cn_text = dt.baidu_fanyi(en_text)
-    cn_text = cn_text.replace('“','"')
-    cn_text = cn_text.replace('”','"')
+    try:
+        # 使用谷歌将中文翻译英文
+        en_text = google_fanyi(text)
+
+        if en_text is None:
+            return
+            # 使用百度将英文翻译中文
+        dt = Dict()
+
+        cn_text = dt.baidu_fanyi(en_text)
+        cn_text = cn_text.replace('“', '"')
+        cn_text = cn_text.replace('”', '"')
+    except Exception as err:
+        cn_text = None
+        print('翻译正文异常：{}'.format(err))
     return cn_text
 
 if __name__ == '__main__':

@@ -5,9 +5,10 @@ import requests
 from threading import Thread
 import re
 from queue import Queue
-from bluextracter import Extractor
+from kw_get_article.extractor import Extractor
 import pymysql
 from translation.content_fanyi import fanyi_content
+from kw_get_article.article_filter import content_filter
 
 class Search_key(Thread):
     '''
@@ -106,8 +107,10 @@ class Down_article(Thread):
                     continue
                 # 提取内容
                 is_insert = self.extract_content(kw,url,source)
-                if is_insert:
-                    print('关键词：{} 文章入库成功.'.format(kw))
+                if is_insert is None:
+                    print('关键词：{},标题：***{}***：入库失败！--->'.format(kw,is_insert))
+                else:
+                    print('关键词：{},入库成功标题：《{}》'.format(kw,is_insert))
             finally:
                 self.downurl_queue.task_done()
 
@@ -132,28 +135,40 @@ class Down_article(Thread):
     def extract_content(self,kw,url,source):
         ex = Extractor()
         ex.extract(url, source)
-        if ex.score > 10000 and len(ex.title) > 10:
-            title = ex.title
-            tag_content = ex.format_text
-            print('得到内容，正在翻译')
-            content = fanyi_content(tag_content)
-            is_success = False
 
-            try:
-                conn = pymysql.Connect(**self.dbconfig)
+        is_success = None
+        # 分值大于 10000 说明文章内容较可观
+        if ex.score > 10000:
+            title = ex.title.replace("'",'').replace('\\','').replace('?','')
+            # 过滤文章,标题长度大于10,小于37 的则保留,太长太短说明质量有问题
+            if len(title) > 10 and len(title) < 37:
+                tag_content = ex.format_text
+                print('得到内容，正在翻译')
+                content = fanyi_content(tag_content)
+                if content is None:
+                    print('翻译失败！')
+                    return
+                print('翻译完成,等待过滤!')
+                content = content_filter(content)
+                content = content.replace("'",'"')
+                print('过滤完成,正在入库中...')
+
                 try:
-                    sql = "insert ignore into article(keywords,title,content) values('{}','{}','{}')".format(kw, title,
-                                                                                                             content)
-                    with conn.cursor() as cursor:
-                        cursor.execute(sql)
-                except pymysql.err.Error as err:
-                    print(err)
-                else:
-                    is_success = True   #执行成功让它为真
-                    conn.commit()
-                    conn.close()
-            except pymysql.err.MySQLError:
-                pass
+                    conn = pymysql.Connect(**self.dbconfig)
+                    try:
+                        sql = "insert ignore into article(keywords,title,content) values('{}','{}','{}')".format(kw, title,
+                                                                                                                 content)
+                        with conn.cursor() as cursor:
+                            cursor.execute(sql)
+                    except pymysql.err.Error as err:
+                        is_success = None
+                        print('数据入库出错，标题：{},异常：'.format(title,err))
+                    else:
+                        conn.commit()
+                        conn.close()
+                        is_success = title  # 执行成功让它 =标题
+                except pymysql.err.MySQLError:
+                    pass
 
             return is_success
 
@@ -169,11 +184,11 @@ if __name__ == '__main__':
         passwd='123456',
         db='spider',
         port=3306,
-        charset='utf8',
+        charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor
     )
 
-    for k in open('key.txt','r',encoding='utf-8'):
+    for k in open('result.txt','r',encoding='utf-8'):
         kw_queue.put(k.strip())
 
     for i in range(5):

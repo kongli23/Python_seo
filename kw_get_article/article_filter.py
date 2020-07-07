@@ -41,6 +41,18 @@ def f_url(re_pat,html):
         html = html.replace(pat,'https://www.ncle.net')
     return html
 
+def title_filter(title):
+    '行者娱乐网站如何进行收录写给至今仍在做SEO外链专员的你'
+    '行者娱乐网站如何进行收录写给至今仍在做SEO外链专员的你'
+    '行者娱乐平台注册为什么要考虑做一个web站点SEO站内优化方案整体操作步骤'
+    'SEO大神进阶过程及搜索引擎优化与竞价排名的优缺点介绍'
+    'www.tlkjt.com 网络推广外包公司_成都网站建设_成都网站优化推广-推来客'
+    '鼎极SEO-关键词排名_网站SEO优化_整站快速推广_搜索引擎_网络推广公司'
+    'SEM百度竞价培训之优化客服话术的3大技巧，第3个太实用了！'
+    '网赚怎么推广呢_关键字百度快速排名方案技术分享找牛BSEOsz-seo.org'
+    str_length = len('行者娱乐平台注册为什么要考虑做一个web站点SEO站内优化方案整体操作步骤')
+    print(str_length)
+
 code = '''
 <section class="post-content">
                         <p>
@@ -86,6 +98,6 @@ code = '''
 #     print(pat)
 
 if __name__ == '__main__':
-    pass
+    title_filter('行者娱乐平台注册为什么要考虑做一个web站点SEO站内优化方案整体操作步骤')
 # res = content_filter(code)
 # print(res)

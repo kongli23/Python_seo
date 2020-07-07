@@ -11,8 +11,12 @@ from googletrans import Translator
 # print(transed_content)
 
 def google_fanyi(text):
-    translator = Translator(service_urls=['translate.google.cn'])
-    transed_content = translator.translate(text, dest='EN').text    #en
+    try:
+        translator = Translator(service_urls=['translate.google.cn'])
+        transed_content = translator.translate(text, dest='EN').text    #en
+    except Exception as err:
+        transed_content = None
+        print('谷歌翻译异常：{}'.format(err))
     return transed_content
 
 if __name__ == '__main__':

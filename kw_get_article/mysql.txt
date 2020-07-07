@@ -1,10 +1,12 @@
-//创建表, id主键自增,keywords关键词,title文章标题,content文章内容
+//创建表, id主键自增,keywords所属关键词,title文章标题unique不允许重复,content文章内容
+//表类型为ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; 支持表情
 create table article(
 	id int primary key auto_increment,
 	keywords varchar(120),
-	title varchar(255),
+	title varchar(255) unique,
 	content text
-)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 //清空数据表
 delete from article;
@@ -16,6 +18,6 @@ alter table article add unique(title);
 select * from article
 
 //插入数据,如果有重复则直接忽略
-insert ignore into article(keywords,title,content) values('seo','seo是什么意思标题','seo是什么意思文章')
+insert ignore into article(keywords,title,content) values('seo','seo是什么意思标题1','seo是什么意思文章')
 
 select * from article where keywords='名人名言故事'
