@@ -108,9 +108,9 @@ class Down_article(Thread):
                 # 提取内容
                 is_insert = self.extract_content(kw,url,source)
                 if is_insert is None:
-                    print('关键词：{},标题：***{}***：入库失败！--->'.format(kw,is_insert))
+                    print('关键词：{},标题：**{}**,url：{},入库失败！--->'.format(kw,is_insert,url))
                 else:
-                    print('关键词：{},入库成功标题：《{}》'.format(kw,is_insert))
+                    print('关键词：{},入库成功标题：<<<----------{}---------->>>'.format(kw,is_insert))
             finally:
                 self.downurl_queue.task_done()
 
@@ -138,20 +138,25 @@ class Down_article(Thread):
 
         is_success = None
         # 分值大于 10000 说明文章内容较可观
-        if ex.score > 10000:
+        # if ex.score > 10000: 网页分值,分数越高说明html内容越足 10000
+        # ex.text_count > 300  网页字数
+        if ex.text_count > 300:
             title = ex.title.replace("'",'').replace('\\','').replace('?','')
-            # 过滤文章,标题长度大于10,小于37 的则保留,太长太短说明质量有问题
-            if len(title) > 10 and len(title) < 37:
-                tag_content = ex.format_text
-                print('得到内容，正在翻译')
-                content = fanyi_content(tag_content)
-                if content is None:
-                    print('翻译失败！')
+            tag_content = ex.format_text
+
+            # print('标题：{}'.format(title))
+            # print('内容：{}'.format(tag_content))
+
+            # 过滤文章,标题长度大于6,小于37 的则保留,太长太短说明质量有问题
+            if len(title) > 6 and len(title) < 37:
+
+                print('得到内容,标题：{}，正在伪原创,过滤'.format(title))
+                tep_content = fanyi_content(tag_content)
+                if tep_content is None:
                     return
-                print('翻译完成,等待过滤!')
-                content = content_filter(content)
-                content = content.replace("'",'"')
-                print('过滤完成,正在入库中...')
+                content = content_filter(tep_content)
+
+                print('处理完成,等待入库中...')
 
                 try:
                     conn = pymysql.Connect(**self.dbconfig)
@@ -161,16 +166,18 @@ class Down_article(Thread):
                         with conn.cursor() as cursor:
                             cursor.execute(sql)
                     except pymysql.err.Error as err:
-                        is_success = None
-                        print('数据入库出错，标题：{},异常：'.format(title,err))
+                        print('数据入库出错，标题：{},url：{},异常：{}'.format(title,url,err))
                     else:
                         conn.commit()
                         conn.close()
                         is_success = title  # 执行成功让它 =标题
                 except pymysql.err.MySQLError:
                     pass
-
-            return is_success
+            else:
+                print('文章标题过短|或过长：抛弃!')
+        else:
+            print('文章内容不合格：抛弃!')
+        return is_success
 
 if __name__ == '__main__':
     kw_queue = Queue() #关键词列队
@@ -188,20 +195,20 @@ if __name__ == '__main__':
         cursorclass=pymysql.cursors.DictCursor
     )
 
-    for k in open('result.txt','r',encoding='utf-8'):
+    for k in open('seo词.txt','r',encoding='utf-8'):
         kw_queue.put(k.strip())
 
-    for i in range(5):
+    for i in range(15):
         s = Search_key(kw_queue, link_queue)
         s.setDaemon(True)
         s.start()
 
-    for i in range(5):
+    for i in range(15):
         d = Decryption_url(link_queue, downurl_queue)
         d.setDaemon(True)
         d.start()
 
-    for i in range(10):
+    for i in range(15):
         down = Down_article(downurl_queue,dbconfig)
         down.setDaemon(True)
         down.start()

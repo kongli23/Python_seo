@@ -11,35 +11,113 @@ def content_filter(code):
     wx_code = f_wx('<.*>.*(微信：[\w,-]{5,10}|vx：[\w,-]{5,10}|VX:[\w,-]{5,10}).*</.*>', phone_code)
     email_code = f_email('\w+@\w+\.[com,cn,net]{1,3}', wx_code)
     url_code = f_url('<.*>.*(https?://(?![^" ]*(?:jpg|png|gif))[^" ]+).*</.*>', email_code)
-    return url_code
+
+    f_020_code = f_020_phone('\d{3}-\d{8}',url_code)
+    f_400_code = f_400('\d{3}-\d{4}-\d{3}',f_020_code)
+    f_QQ_code = f_QQ('QQ：\d{5,11}',f_400_code)
+    f_flts1_code = f_flts1('以上内容.*?查看更多',f_QQ_code)
+    f_flts2_code = f_flts2('更多.*?查看更多',f_flts1_code)
+
+    return f_flts2_code
 
 # 手机号
 def f_phone(re_pat,html):
-    phone_test = re.compile(r'{}'.format(re_pat),re.I).findall(html)
-    for pat in phone_test:
-        html = html.replace(pat,'13420877713')
-    return html
+    result = ''
+    res = re.compile(r'{}'.format(re_pat), re.I).findall(html)
+    if len(res) >0:
+        for pat in res:
+            result = html.replace(pat, '13420877713')
+    else:
+        result = html
+    return result
 
 # 微信号
 def f_wx(re_pat,html):
-    wx_test = re.compile(r'{}'.format(re_pat),re.I).findall(html)
-    for pat in wx_test:
-        html = html.replace(pat,'微信：sky7make')
-    return html
+    result = ''
+    res = re.compile(r'{}'.format(re_pat), re.I).findall(html)
+    if len(res) > 0:
+        for pat in res:
+            result = html.replace(pat, '微信：sky7make')
+    else:
+        result = html
+    return result
 
 # 邮箱号
 def f_email(re_pat,html):
-    email_test = re.compile(r'{}'.format(re_pat),re.I).findall(html)
-    for pat in email_test:
-        html = html.replace(pat,'50377564@qq.com')
-    return html
+    result = ''
+    res = re.compile(r'{}'.format(re_pat), re.I).findall(html)
+    if len(res) > 0:
+        for pat in res:
+            result = html.replace(pat, '50377564@qq.com')
+    else:
+        result = html
+    return result
 
 # url网址
 def f_url(re_pat,html):
-    url_test = re.compile(r'{}'.format(re_pat),re.I).findall(html)
-    for pat in url_test:
-        html = html.replace(pat,'https://www.ncle.net')
-    return html
+    result = ''
+    res = re.compile(r'{}'.format(re_pat), re.I).findall(html)
+    if len(res) > 0:
+        for pat in res:
+            result = html.replace(pat, 'https://www.ncle.net')
+    else:
+        result = html
+    return result
+
+# 020电话
+def f_020_phone(re_pat,html):
+    result = ''
+    res = re.compile(r'{}'.format(re_pat), re.I).findall(html)
+    if len(res) > 0:
+        for pat in res:
+            result = html.replace(pat, '13420877713')
+    else:
+        result = html
+    return result
+
+# 400电话
+def f_400(re_pat,html):
+    result = ''
+    res = re.compile(r'{}'.format(re_pat), re.I).findall(html)
+    if len(res) > 0:
+        for pat in res:
+            result = html.replace(pat, '13420877713')
+    else:
+        result = html
+    return result
+
+# QQ号
+def f_QQ(re_pat,html):
+    result = ''
+    res = re.compile(r'{}'.format(re_pat), re.I).findall(html)
+    if len(res) > 0:
+        for pat in res:
+            result = html.replace(pat, '50377564')
+    else:
+        result = html
+    return result
+
+# 多内容替换1
+def f_flts1(re_pat,html):
+    result = ''
+    res = re.compile(r'{}'.format(re_pat), re.I).findall(html)
+    if len(res) > 0:
+        for pat in res:
+            result = html.replace(pat, '')
+    else:
+        result = html
+    return result
+
+# 多内容替换2
+def f_flts2(re_pat,html):
+    result = ''
+    res = re.compile(r'{}'.format(re_pat), re.I).findall(html)
+    if len(res) > 0:
+        for pat in res:
+            result = html.replace(pat, '')
+    else:
+        result = html
+    return result
 
 def title_filter(title):
     '行者娱乐网站如何进行收录写给至今仍在做SEO外链专员的你'
@@ -50,7 +128,7 @@ def title_filter(title):
     '鼎极SEO-关键词排名_网站SEO优化_整站快速推广_搜索引擎_网络推广公司'
     'SEM百度竞价培训之优化客服话术的3大技巧，第3个太实用了！'
     '网赚怎么推广呢_关键字百度快速排名方案技术分享找牛BSEOsz-seo.org'
-    str_length = len('行者娱乐平台注册为什么要考虑做一个web站点SEO站内优化方案整体操作步骤')
+    str_length = len('实验室建设规划方案')
     print(str_length)
 
 code = '''
@@ -87,6 +165,12 @@ code = '''
 # result = filter(code)
 # print(result)
 
+#更多.*?查看更多 匹配多内容联系方式
+#以上内容.*?查看更多 匹配多内容联系方式
+#QQ：\d{5,11} 匹配QQ号
+#\d{3}-\d{4}-\d{3} 匹配400-1234-123 电话
+#\d{3}-\d{8} 匹配020-12345678 电话
+
 #<.*>[^<img.*?>].*(1[35678]\d{9}).*</.*> 匹配 html标签内的手机号
 #<.*>.*(https?://(?![^" ]*(?:jpg|png|gif))[^" ]+).*</.*> 匹配 html标签内的网址 http https .com/abc.html
 #<.*>.*(微信：[\w,-]{5,10}|vx：[\w,-]{5,10}|VX:[\w,-]{5,10}).*</.*> 匹配 html标签内的微信号
@@ -98,6 +182,6 @@ code = '''
 #     print(pat)
 
 if __name__ == '__main__':
-    title_filter('行者娱乐平台注册为什么要考虑做一个web站点SEO站内优化方案整体操作步骤')
-# res = content_filter(code)
-# print(res)
+    # title_filter('行者娱乐平台注册为什么要考虑做一个web站点SEO站内优化方案整体操作步骤')
+    res = content_filter(code)
+    print('结果：',res)

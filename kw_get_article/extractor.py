@@ -76,8 +76,11 @@ class Extractor(object):
         if self.top_node is None:
             return
         self.remove_link_block()
-        if (len(self.__title_tmp) / float(self.__titlelen)) > 0.2:
-            self.title = self.__title_tmp
+        try:
+            if (len(self.__title_tmp) / float(self.__titlelen)) > 0.2:
+                self.title = self.__title_tmp
+        except ZeroDivisionError:
+            return
         content = self.output_format(self.top_node)
         self.clean_text = "\n".join([t if "img" not in t else
                                      "" for t in content.split('\n')])

@@ -3,20 +3,21 @@ from threading import Thread
 from lxml import etree
 from queue import Queue
 from pybloom_live import BloomFilter
+import time
+from spider_related_key.random_ua import random_ua
 
 class Downloader:
-    headers = {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.106 Safari/537.36 Edg/83.0.478.54'
-    }
+
     def download(self,kw,retries=3):
-        params = {
-            'wd':kw,
-            'pn':0
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36 Edg/83.0.478.58'
+        headers = {
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+            'User-Agent': '{}'.format(random_ua())
         }
-        query = 'https://www.baidu.com/s?'
+
+        query = 'https://www.baidu.com/s?wd={}&pn=10'.format(kw)
         try:
-            resp = requests.get(query,params=params,headers=self.headers,timeout=10)
+            resp = requests.get(query,headers=headers,timeout=10)
         except requests.RequestException as err:
             html = None
             print('{}: download err：{}'.format(query,err))
@@ -50,6 +51,7 @@ class Related_Key(Thread,Downloader):
                 if source is None:
                     continue
                 self.parse_html(source)
+                # time.sleep(0.5)  # 处理完一次暂停0.5秒
             finally:
                 self.key_queue.task_done()
 
