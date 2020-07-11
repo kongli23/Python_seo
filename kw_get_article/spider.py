@@ -9,6 +9,7 @@ from kw_get_article.extractor import Extractor
 import pymysql
 from translation.content_fanyi import fanyi_content
 from kw_get_article.article_filter import content_filter
+import chardet
 
 class Search_key(Thread):
     '''
@@ -117,20 +118,18 @@ class Down_article(Thread):
     def download(self,url):
 
         try:
+            requests.packages.urllib3.disable_warnings()  # 忽略urllib3 https警告
             resp = requests.get(url, headers=self.headers, timeout=10)
         except requests.RequestException as err:
             print('{}:下载异常：{}'.format(url, err))
             html = None
         else:
-            resp.encoding = self.get_encoding(resp.text)
-            html = resp.text
-        return html
+            # 自动识别编码
+            coding = chardet.detect(resp.content)
+            if (coding['encoding'] != ''):
+                html = resp.content.decode(coding['encoding'])  # 自动设置网页源码
 
-    def get_encoding(self,html):
-        encoding = re.findall('<meta.*?charset="?([\w-]*)".*>',html,re.I)
-        if encoding:
-            return encoding[0]
-        return 'utf-8'
+        return html
 
     def extract_content(self,kw,url,source):
         ex = Extractor()
