@@ -16,6 +16,7 @@ class Spider_top_50_link(Thread):
     '''
     headers = {
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36 Edg/83.0.478.58'
     }
 
@@ -137,12 +138,14 @@ class Download_article(Thread):
             if retrys > 0:
                 return self.download(kw,url,retrys -1)
         else:
-            # 自动识别编码,如果没识别出来编码则返回空值,防止乱码数据
-            coding = chardet.detect(resp.content)
-            if (coding['encoding'] != ''):
-                html = resp.content.decode(coding['encoding'])  # 自动设置网页源码
-            else:
+            try:
+                # 自动识别编码,如果没识别出来编码则返回空值,防止乱码数据
+                coding = chardet.detect(resp.content)
+                if (coding['encoding'] != ''):
+                    html = resp.content.decode(coding['encoding'])  # 自动设置网页源码
+            except UnicodeDecodeError as err:
                 html = None
+                print('解码错误！{}'.format(err))
         return html
 
     def extract_content(self,kw,url,source):
