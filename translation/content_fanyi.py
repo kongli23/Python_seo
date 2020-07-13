@@ -10,11 +10,8 @@ def fanyi_content(text,retries=3):
     '''
 
     try:
-        # print('=' * 80)
         # 使用谷歌将中文翻译英文
         en_text = google_fanyi(text)
-        # print('谷歌内容：{}'.format(en_text))
-        # print('*' * 50)
         if en_text is None:
             return
             # 使用百度将英文翻译中文
@@ -22,12 +19,10 @@ def fanyi_content(text,retries=3):
 
         try:
             cn_text = dt.baidu_fanyi(en_text)
-            # print('百度内容：{}'.format(cn_text))
             cn_text = cn_text.replace('“', '"')
             cn_text = cn_text.replace('”', '"')
         except AttributeError:
             return
-        # print('=' * 80)
     except TypeError as err:
         success_text = None
         print('翻译正文异常：{},准备重试!'.format(err))

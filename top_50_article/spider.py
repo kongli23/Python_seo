@@ -6,8 +6,7 @@ import pymysql
 from threading import Thread
 from queue import Queue
 from top_50_article.extractor import Extractor
-
-'https://www.baidu.com/s?wd=%E7%BD%91%E7%AB%99%E4%BC%98%E5%8C%96%E6%80%8E%E4%B9%88%E5%81%9A&pn=50&oq=%E7%BD%91%E7%AB%99%E4%BC%98%E5%8C%96%E6%80%8E%E4%B9%88%E5%81%9A&rn=50&ie=utf-8'
+from translation.content_fanyi import fanyi_content
 
 # 根据关键词下载前50名的链接快照
 class Spider_top_50_link(Thread):
@@ -49,9 +48,9 @@ class Spider_top_50_link(Thread):
         except requests.RequestException as err:
             print('{}:下载异常：{}'.format(query, err))
             html = None
-            print('暂停5秒重试!')
+            print('暂停3秒重试!')
             if retrys > 0:
-                time.sleep(5)
+                time.sleep(3)
                 return self.download(kw,retrys -1)
         else:
             resp.encoding = 'utf-8'
@@ -142,7 +141,7 @@ class Download_article(Thread):
                 # 自动识别编码,如果没识别出来编码则返回空值,防止乱码数据
                 coding = chardet.detect(resp.content)
                 if (coding['encoding'] != ''):
-                    html = resp.content.decode(coding['encoding'])  # 自动设置网页源码
+                    html = resp.content.decode(str(coding['encoding'].strip()))  # 自动设置网页源码
             except UnicodeDecodeError as err:
                 html = None
                 print('解码错误！{}'.format(err))
@@ -154,22 +153,28 @@ class Download_article(Thread):
         if ex.score > 10000:
             title = ex.title
             if len(title) > 5 and len(title) < 37:
-                content = ex.format_text
-                print('得到标题：{}'.format(title))
-                # 开始入库
-                try:
-                    conn = pymysql.Connect(**self.db_config)
+                art_text = ex.clean_text
+                content = fanyi_content(art_text)
+
+                # 判断翻译结果,不为None时才入库
+                if content is not None:
+                    print('得到标题：{}'.format(title))
+                    # 开始入库
                     try:
-                        sql = "insert ignore into top_50_article(keywords,title,content) values(%s,%s,%s)"
-                        with conn.cursor() as cursor:
-                            cursor.execute(sql,args=(kw,title,content))
-                    except pymysql.err.Error as err:
-                        print('插入数据出错，标题：{},url：{},异常：{}'.format(title,url,err))
-                    else:
-                        conn.commit()
-                        conn.close()
-                except pymysql.err.MySQLError:
-                    print('链接数据库出错!')
+                        conn = pymysql.Connect(**self.db_config)
+                        try:
+                            sql = "insert ignore into top_50_article(keywords,title,content) values(%s,%s,%s)"
+                            with conn.cursor() as cursor:
+                                cursor.execute(sql,args=(kw,title,content))
+                        except pymysql.err.Error as err:
+                            print('插入数据出错，标题：{},url：{},异常：{}'.format(title,url,err))
+                        else:
+                            conn.commit()
+                            conn.close()
+                    except pymysql.err.MySQLError:
+                        print('链接数据库出错!')
+            else:
+                print('翻译内容出错！')
 
 if __name__ == '__main__':
     kw_queue = Queue()
