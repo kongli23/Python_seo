@@ -31,7 +31,7 @@ def extract_content(url, source):
     # if ex.score > 10000 and len(ex.title) > 10:
     if ex.text_count > 300:
         title = ex.title
-        content = ex.format_text
+        content = ex.clean_text
         print(title)
         print(content)
         print('-' * 50)
@@ -44,7 +44,8 @@ def extract_content(url, source):
 
 if __name__ == '__main__':
     # url = 'https://www.mjia.cc/news-detail-394847.html'
-    url = 'http://www.chinatiebiaoji.com/htmls/210.html'
+    # url = 'http://www.chinatiebiaoji.com/htmls/210.html'
+    url = 'http://chxylab.xznu.edu.cn/2d/34/c4168a77108/page.htm'
     source = download(url)
     if source:
         extract_content(url,source)

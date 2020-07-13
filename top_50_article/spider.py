@@ -74,10 +74,11 @@ class Decry_url(Thread):
     '''
     解析得到的快照链接,获取真实文章url地址
     '''
-    def __init__(self,link_queue,download_queue):
+    def __init__(self,link_queue,download_queue,filter_url):
         super(Decry_url, self).__init__()
         self.link_queue = link_queue
         self.download_queue = download_queue
+        self.filter_url = filter_url
 
     def run(self):
         while True:
@@ -92,8 +93,9 @@ class Decry_url(Thread):
             print('解析快照链接异常: {}'.format(err))
         else:
             real_url = resp.headers.get('Location')
-            if 'baidu.com' in real_url:
-                return
+            for con in self.filter_url:
+                if con in real_url:
+                    return
             self.download_queue.put((kw, real_url))
 
 # 根据快照解析后的真实地址采集文章
@@ -128,6 +130,7 @@ class Download_article(Thread):
         :return:
         '''
 
+        html = None
         try:
             resp = requests.get(url, headers=self.headers, timeout=15)
         except requests.RequestException as err:
@@ -141,7 +144,10 @@ class Download_article(Thread):
                 # 自动识别编码,如果没识别出来编码则返回空值,防止乱码数据
                 coding = chardet.detect(resp.content)
                 if (coding['encoding'] != ''):
-                    html = resp.content.decode(str(coding['encoding'].strip()))  # 自动设置网页源码
+                    try:
+                        html = resp.content.decode(str(coding['encoding'].strip()))  # 自动设置网页源码
+                    except AttributeError:
+                        pass
             except UnicodeDecodeError as err:
                 html = None
                 print('解码错误！{}'.format(err))
@@ -163,9 +169,9 @@ class Download_article(Thread):
                     try:
                         conn = pymysql.Connect(**self.db_config)
                         try:
-                            sql = "insert ignore into top_50_article(keywords,title,content) values(%s,%s,%s)"
+                            sql = "insert ignore into top_50_article(keywords,title,content,source) values(%s,%s,%s,%s)"
                             with conn.cursor() as cursor:
-                                cursor.execute(sql,args=(kw,title,content))
+                                cursor.execute(sql,args=(kw,title,content,url))
                         except pymysql.err.Error as err:
                             print('插入数据出错，标题：{},url：{},异常：{}'.format(title,url,err))
                         else:
@@ -180,6 +186,12 @@ if __name__ == '__main__':
     kw_queue = Queue()
     link_queue = Queue()
     download_queue = Queue()
+
+    # 加载过滤url
+    filter_url = []
+    for k in open('filter_url.txt', 'r', encoding='utf-8'):
+        filter_url.append(k.strip())
+
     # 数据库配置
     db_config = dict(
         host='localhost',
@@ -202,7 +214,7 @@ if __name__ == '__main__':
 
     # 解析快照链接类
     for i in range(15):
-        d = Decry_url(link_queue,download_queue)
+        d = Decry_url(link_queue,download_queue,filter_url)
         d.setDaemon(True)
         d.start()
 

@@ -16,7 +16,7 @@ def fanyi_content(text,retries=3):
             return
             # 使用百度将英文翻译中文
         dt = Dict()
-
+        # print('谷歌内容：{}'.format(en_text))
         try:
             cn_text = dt.baidu_fanyi(en_text)
             cn_text = cn_text.replace('“', '"')
