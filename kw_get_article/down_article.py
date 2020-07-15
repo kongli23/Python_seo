@@ -3,6 +3,7 @@ import requests
 import re
 from kw_get_article.article_filter import content_filter
 from translation.content_fanyi import fanyi_content
+from top_50_article.filter_keys import clean_content
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (compatible; Baiduspider-render/2.0; +http://www.baidu.com/search/spider.html)'
@@ -31,11 +32,11 @@ def extract_content(url, source):
     # if ex.score > 10000 and len(ex.title) > 10:
     if ex.text_count > 300:
         title = ex.title
-        content = ex.clean_text
+        content = ex.format_text
         print(title)
         print(content)
         print('-' * 50)
-        new_content = fanyi_content(content)
+        new_content = fanyi_content(clean_content(content))
         # new_content = content_filter(new_content)
 
         # ○○○

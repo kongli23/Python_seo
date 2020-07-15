@@ -1,12 +1,14 @@
+# -*- coding:utf-8 -*-
 import requests
-import chardet
+# import chardet
+import cchardet
 import re
 import time
 import pymysql
 from threading import Thread
 from queue import Queue
 from top_50_article.extractor import Extractor
-from translation.content_fanyi import fanyi_content
+from top_50_article.filter_keys import clean_content
 
 # 根据关键词下载前50名的链接快照
 class Spider_top_50_link(Thread):
@@ -48,9 +50,9 @@ class Spider_top_50_link(Thread):
         except requests.RequestException as err:
             print('{}:下载异常：{}'.format(query, err))
             html = None
-            print('暂停3秒重试!')
+            print('暂停2秒重试!')
             if retrys > 0:
-                time.sleep(3)
+                time.sleep(2)
                 return self.download(kw,retrys -1)
         else:
             resp.encoding = 'utf-8'
@@ -140,27 +142,42 @@ class Download_article(Thread):
             if retrys > 0:
                 return self.download(kw,url,retrys -1)
         else:
-            try:
-                # 自动识别编码,如果没识别出来编码则返回空值,防止乱码数据
-                coding = chardet.detect(resp.content)
-                if (coding['encoding'] != ''):
-                    try:
-                        html = resp.content.decode(str(coding['encoding'].strip()))  # 自动设置网页源码
-                    except AttributeError:
-                        pass
-            except UnicodeDecodeError as err:
-                html = None
-                print('解码错误！{}'.format(err))
+            # try:
+            #     # 自动识别编码,如果没识别出来编码则返回空值,防止乱码数据
+            #     coding = chardet.detect(resp.content)
+            #     if (coding['encoding'] != ''):
+            #         try:
+            #             html = resp.content.decode(str(coding['encoding'].strip()))  # 自动设置网页源码
+            #         except AttributeError:
+            #             pass
+            # except UnicodeDecodeError as err:
+            #     html = None
+            #     print('解码错误！{}'.format(err))
+            # ======================================
+            text = resp.content  # 这里返回的是二进制的内容
+            encoding = cchardet.detect(text)['encoding']
+            if encoding is None:
+                encoding = 'gbk'
+            html = text.decode(encoding=encoding, errors='ignore')
+            # ======================================
         return html
 
     def extract_content(self,kw,url,source):
         ex = Extractor()
         ex.extract(url,source)
-        if ex.score > 10000:
+
+        # 过滤文章,质量不少于10000分, 并且字数超过5000的不要(字数太多,翻译容易出错)
+        if ex.score > 10000 and ex.text_count < 5000:
             title = ex.title
             if len(title) > 5 and len(title) < 37:
-                art_text = ex.clean_text
-                content = fanyi_content(art_text)
+                # 得到文本源码,并过滤特征词跟网址,并翻译
+                print('正在清洗内容过滤...')
+                content = clean_content(ex.format_text)
+
+                # text = ex.format_text
+                # 将内容进行翻译伪原创
+                # content = tran_method(text)
+
 
                 # 判断翻译结果,不为None时才入库
                 if content is not None:
@@ -179,8 +196,6 @@ class Download_article(Thread):
                             conn.close()
                     except pymysql.err.MySQLError:
                         print('链接数据库出错!')
-            else:
-                print('翻译内容出错！')
 
 if __name__ == '__main__':
     kw_queue = Queue()

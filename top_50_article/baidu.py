@@ -1,7 +1,9 @@
+# -*- coding:utf-8 -*-
 import execjs   #使用它，得安装另一个库 pip install PyExecJS
 import requests
 import re
 import json
+from top_50_article.user_agents import RandomUserAgent
 
 JS_CODE = """
 function a(r, o) {
@@ -37,12 +39,11 @@ var token = function(r, _gtk) {
 """
 
 
-class Dict:
+class translate_baidu:
     def __init__(self):
         self.sess = requests.Session()
         self.headers = {
-            'User-Agent':
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
+            'User-Agent':'{}'.format(RandomUserAgent)
         }
         self.token = None
         self.gtk = None
@@ -148,7 +149,6 @@ class Dict:
                 for dst in js['trans_result']['data']:
                     result = dst['result']
                     for res in result:
-                        # print(res)
                         text += str(res[1]) + str(res[3])
                 text = text.replace('[]', '')
                 text = text.replace(r"['1|\n']", '\n\n')
@@ -158,14 +158,16 @@ class Dict:
                 return None
         return None
 
-    def baidu_fanyi(self, text):
-        ret1 = self.dictionary_by_lang(text, "en", "zh")
-        return ret1
-
-if __name__ == '__main__':
-    text = '''
-    The layout of the laboratory is the basis of the laboratory planning. As long as the corresponding layout planning is done according to the requirements of functional partitions and work processes, the subsequent professional design plans for water, electricity, wind and other technologies can be ensured. . Therefore, the plan layout design stage should consider the work and development needs in detail as much as possible, allocate space reasonably, and optimize and integrate as much as possible. In addition to the optimization of the layout and the design of the placement of laboratory equipment, it should also fully consider whether the direction of staff flow and the flow of items meets the work requirements.
+def baidu(text):
     '''
-    dt = Dict()
-    res = dt.baidu_fanyi(text)
-    print(res)
+    百度翻译
+    :param text:
+    :return:
+    '''
+    try:
+        di = translate_baidu()
+        result = di.dictionary_by_lang(text, "en", "zh")
+    except Exception as err:
+        result = None
+        print('百度翻译异常：{}'.format(err))
+    return result

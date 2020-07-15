@@ -1,7 +1,8 @@
+import re
 from translation.google_fanyi import google_fanyi
 from translation.baidu_fanyi import Dict
 
-def fanyi_content(text,retries=3):
+def fanyi_content(text):
     '''
     传入中文，将中文翻译成英文，再将英文翻译成中文
 
@@ -9,30 +10,22 @@ def fanyi_content(text,retries=3):
     :return: 返回翻译后的中文
     '''
 
+    success_text = ''
+    # 使用谷歌将中文翻译英文
+    en_text = google_fanyi(text)
+
+    # 使用百度将英文翻译中文
+    dt = Dict()
+    # print('谷歌内容：{}'.format(en_text))
     try:
-        # 使用谷歌将中文翻译英文
-        en_text = google_fanyi(text)
-        if en_text is None:
+        cn_text = dt.baidu_fanyi(en_text)
+        if cn_text is None:
             return
-            # 使用百度将英文翻译中文
-        dt = Dict()
-        # print('谷歌内容：{}'.format(en_text))
-        try:
-            cn_text = dt.baidu_fanyi(en_text)
-            cn_text = cn_text.replace('“', '"')
-            cn_text = cn_text.replace('”', '"')
-        except AttributeError:
-            return
-    except TypeError as err:
-        success_text = None
-        print('翻译正文异常：{},准备重试!'.format(err))
-
-        # 重试次数
-        if retries > 0:
-            return fanyi_content(text, retries - 1)
+        res = re.sub(r'“|”', '"', cn_text)
+    except AttributeError as err:
+        print('异常：{}，百度翻译：{}'.format(err,en_text))
     else:
-        success_text = cn_text
-
+        success_text = res
     return success_text
 
 if __name__ == '__main__':
