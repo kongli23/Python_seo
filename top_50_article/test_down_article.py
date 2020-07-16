@@ -4,6 +4,7 @@ import cchardet
 from top_50_article.filter_keys import clean_content
 from top_50_article.extractor import Extractor
 from top_50_article.translate import start_translate
+from top_50_article.pseudo_original import google
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (compatible; Baiduspider-render/2.0; +http://www.baidu.com/search/spider.html)'
@@ -29,10 +30,13 @@ def extract_content(url, source):
     if ex.text_count > 300:
         text = clean_content(ex.format_text)
         print('开始翻译内容...')
-        result = start_translate(text)
+        # result = start_translate(text)
         # result = google(text)
-        print('原始文章：{}'.format(text))
-        print('翻译文章：{}'.format(result))
+        result = google('zh-CN','en',text)
+        print('原始内容：{}'.format(text))
+        print('英文内容：{}'.format(result))
+        new_text = google('en','zh-CN',result)
+        print('翻译内容：{}'.format(new_text))
 
 if __name__ == '__main__':
     url = 'http://bs.17house.com/16832/'
