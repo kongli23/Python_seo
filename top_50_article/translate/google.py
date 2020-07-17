@@ -5,10 +5,14 @@ import urllib.parse
 import requests
 import execjs
 import re
-from threading import Thread
+from top_50_article.translate.youdao import youdao
 
 class translate_google():
-    def __init__(self):
+    def __init__(self,word_limit=1000, dl_words=300):
+        self.spilt = re.compile(r'</?p.*?>|\n', re.I | re.S)
+        self.sent_end = re.compile(r'([。.?？!！;；])', re.I)
+        self.word_limit = word_limit
+        self.dl_words = dl_words
 
         self.lan_dict = {
             '中文': 'zh-CN',
@@ -109,17 +113,56 @@ class translate_google():
         url = self.buildUrl(text, tk, from_lan, to_lan)
         result = self.getHtml(self.session, url, self.headers)
         if result != None:
-            ans = []
+            ans = ""
             s=''
             for i in result[0]:
                 if i[0]!=None:
                     s+=i[0]
             for i in s.split('\n'):
-                ans.append(i)
+                ans +=i
             return ans
         else:
             self.logger.info('谷歌翻译失败 ')
             return None
+
+    def split_article(self,article):
+        sentences = self.spilt.split(article)
+        text = ""
+        ai_text = ""
+        while sentences:
+            text_len = len(text)
+            if text_len < self.word_limit:
+                t = sentences.pop(0)
+                text += t.strip()
+            if text_len >= self.word_limit or not sentences:
+                ai_text += self.ai_article(text)
+                text = ""
+        return self.make_dl(ai_text)
+
+    def ai_article(self, text):
+        if not isinstance(text, str):
+            return
+        zh_en = self.translate('zh-CN', 'en', text)
+        if not zh_en:
+            return text
+        en_zh = youdao(zh_en)
+        # en_zh = self.translate(zh_en, "en", "zh-CN")
+        return en_zh if en_zh else text
+
+    def make_dl(self, text):
+        new_text = self.sent_end.sub('\g<1>\n', text)
+        sentences = re.split(r'\n', new_text)
+        new_article = ""
+        p_text = ""
+        for t in sentences:
+            if len(p_text) > self.dl_words:
+                new_article += f'<p>{p_text}</p>'
+                p_text = ""
+                continue
+            p_text += t
+        else:
+            new_article += f'<p>{p_text}</p>'
+        return new_article
 
 def google(text):
     '''
@@ -127,6 +170,14 @@ def google(text):
     :param text:
     :return:
     '''
-    gg = translate_google()
-    result = gg.translate('zh-CN', 'en', text)
-    return result[0]
+    g = translate_google()
+    res = g.split_article(text)
+    return res
+
+if __name__ == '__main__':
+    text = ""
+    with open('demo.txt','r',encoding='utf-8') as f:
+        text = f.read()
+    # print(text)
+    res = google(text)
+    print('结果：{}'.format(res))
