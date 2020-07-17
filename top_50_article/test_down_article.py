@@ -3,8 +3,7 @@ import requests
 import cchardet
 from top_50_article.filter_keys import clean_content
 from top_50_article.extractor import Extractor
-from top_50_article.translate import start_translate
-from top_50_article.pseudo_original import google
+from top_50_article.translate.google import google
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (compatible; Baiduspider-render/2.0; +http://www.baidu.com/search/spider.html)'
@@ -32,15 +31,13 @@ def extract_content(url, source):
         print('开始翻译内容...')
         # result = start_translate(text)
         # result = google(text)
-        result = google('zh-CN','en',text)
+        result = google(text)
         print('原始内容：{}'.format(text))
-        print('英文内容：{}'.format(result))
-        new_text = google('en','zh-CN',result)
-        print('翻译内容：{}'.format(new_text))
+        print('翻译内容：{}'.format(result))
 
 if __name__ == '__main__':
-    url = 'http://bs.17house.com/16832/'
-    # url = 'https://www.wobosi.com/1586.html'
+    # url = 'http://bs.17house.com/16832/'
+    url = 'https://www.wobosi.com/1586.html'
     source = download(url)
     if source:
         extract_content(url,source)
