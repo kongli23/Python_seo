@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
 import requests
 import cchardet
-from top_50_article.filter_keys import clean_content
-from top_50_article.extractor import Extractor
-from top_50_article.translate.google import google
+from spider_key_article.filter_keys import clean_content
+from spider_key_article.extractor import Extractor
+from spider_key_article.translate.google import google
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (compatible; Baiduspider-render/2.0; +http://www.baidu.com/search/spider.html)'

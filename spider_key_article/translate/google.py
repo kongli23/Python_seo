@@ -5,7 +5,7 @@ import urllib.parse
 import requests
 import execjs
 import re
-from top_50_article.translate.youdao import youdao
+from spider_key_article.translate.youdao import youdao
 
 class translate_google():
     def __init__(self,word_limit=1000, dl_words=300):
@@ -115,14 +115,20 @@ class translate_google():
         if result != None:
             ans = ""
             s=''
-            for i in result[0]:
-                if i[0]!=None:
-                    s+=i[0]
-            for i in s.split('\n'):
-                ans +=i
+            try:
+                for i in result[0]:
+                    if i[0] != None:
+                        s += i[0]
+                for i in s.split('\n'):
+                    ans += i
+            except TypeError as err:
+                pass
             return ans
         else:
-            self.logger.info('谷歌翻译失败 ')
+            try:
+                self.logger.info('谷歌翻译失败 ')
+            except AttributeError as err:
+                pass
             return None
 
     def split_article(self,article):
