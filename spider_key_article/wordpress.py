@@ -4,7 +4,7 @@ from wordpress_xmlrpc.compat import xmlrpc_client
 from wordpress_xmlrpc.methods import media, posts
 
 
-wp = Client('https://www.ncle.net/xmlrpc.php', 'admin', 'fuck_admin')
+wp = Client('https://www.ncle.net/xmlrpc.php', 'test', 'test')
 
 # filename = r'C:\Users\Kongli\Pictures\QQ图片20200513164614.jpg' #上传的图片文件路径
 
