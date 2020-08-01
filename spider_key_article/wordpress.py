@@ -31,4 +31,8 @@ def wp_post(title,content,tags,category):
     }
     # post.thumbnail = attachment_id #缩略图的id
     post.id = wp.call(posts.NewPost(post))
-    return '发布内容：{}'.format(post)
+    return post.id
+
+if __name__ == '__main__':
+    post_id = wp_post('测试标题','测试内容','我是标签','SEO优化')
+    print(post_id)
