@@ -186,7 +186,7 @@ class Download_article(Thread):
                     try:
                         conn = pymysql.Connect(**self.db_config)
                         try:
-                            sql = "insert ignore into baidu_search(keywords,title,content,source) values(%s,%s,%s,%s)"
+                            sql = "insert ignore into shiyanshisheji(keywords,title,content,source) values(%s,%s,%s,%s)"
                             with conn.cursor() as cursor:
                                 cursor.execute(sql,args=(kw,title,content,url))
                         except pymysql.err.Error as err:
@@ -209,16 +209,16 @@ if __name__ == '__main__':
 
     # 数据库配置
     db_config = dict(
-        host='192.168.244.128',
+        host='127.0.0.1',
         user='spider',
-        passwd='spider',
+        passwd='123456',
         db='spider',
         port=3306,
         charset='utf8',
         cursorclass=pymysql.cursors.DictCursor
     )
 
-    for k in open('seo.txt', 'r', encoding='utf-8'):
+    for k in open('shiyanshisheji.txt', 'r', encoding='utf-8'):
         kw_queue.put(k.strip())
 
     # 下载快照链接类

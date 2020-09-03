@@ -12,10 +12,19 @@ class Downloader:
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36 Edg/83.0.478.58'
         headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-            'User-Agent': '{}'.format(random_ua())
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'same-origin',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1',
+            'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36 Edg/84.0.522.52'
         }
 
-        query = 'https://www.baidu.com/s?wd={}&pn=10'.format(kw)
+        query = 'https://www.baidu.com/s?wd={}&pn=0&oq={}&tn=baiduhome_pg&ie=utf-8&usm=1&rsv_idx=2&rsv_pq=fc92530f001c53d7&rsv_t=4c7a%2BSikQx8cwZpNbcESt1hDi%2B2x0ceYQGiqkyPCwvTYzBQVLSKl5iOye84LdNhXgTWF'.format(kw,kw)
         try:
             resp = requests.get(query,headers=headers,timeout=10)
         except requests.RequestException as err:
@@ -51,7 +60,7 @@ class Related_Key(Thread,Downloader):
                 if source is None:
                     continue
                 self.parse_html(source)
-                # time.sleep(0.5)  # 处理完一次暂停0.5秒
+                time.sleep(0.5)  # 处理完一次暂停0.5秒
             finally:
                 self.key_queue.task_done()
 
