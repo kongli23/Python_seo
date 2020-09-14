@@ -9,6 +9,7 @@ from queue import Queue
 from pybloom_live import BloomFilter
 
 # 神码搜索  https://m.sm.cn/s?q=%E5%AE%9E%E9%AA%8C%E5%AE%A4%E8%A3%85%E4%BF%AE&by=submit&snum=6
+# 搜狗下载搜索    https://www.sogou.com/suggnew/ajajjson?key=%E5%AE%9E%E9%AA%8C%E5%AE%A4%E8%AE%BE%E8%AE%A1
 
 class Downloader:
     def download(self,kw,retries=3):

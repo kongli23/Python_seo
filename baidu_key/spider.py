@@ -116,7 +116,7 @@ class Save_key(Thread):
         try:
             conn = pymysql.Connect(**self.db_config)
             try:
-                sql = "insert ignore into shiyanshi_key(keywords) values(%s)"
+                sql = "insert ignore into pcr(keywords) values(%s)"
                 with conn.cursor() as cursor:
                     cursor.execute(sql, args=(wd))
             except pymysql.err.Error as err:
@@ -133,7 +133,7 @@ class Save_key(Thread):
 if __name__ == '__main__':
     key_queue = Queue() #采集列队
     save_queue = Queue()    #保存列队
-    filename = "result.txt"  # 结果保存文件名
+    # filename = "result.txt"  # 结果保存文件名
 
     for k in open('init.txt','r',encoding='utf-8'):
         key_queue.put(k.strip())
@@ -159,7 +159,7 @@ if __name__ == '__main__':
         spider.setDaemon(True)
         spider.start()
 
-    # 采集列队,5个线程
+    # 保存列队,5个线程
     for i in range(10):
         savekey = Save_key(save_queue,contain,db_config)
         savekey.setDaemon(True)

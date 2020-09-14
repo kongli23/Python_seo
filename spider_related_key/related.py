@@ -105,7 +105,7 @@ class Filter_key(Thread):
 if __name__ == '__main__':
     key_queue = Queue() #采集列队
     save_queue = Queue()    #保存列队
-    filename = "result.txt"  # 结果保存文件名
+    filename = "pcr.txt"  # 结果保存文件名
 
     for k in open('init.txt','r',encoding='utf-8'):
         key_queue.put(k.strip())
