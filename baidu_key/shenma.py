@@ -8,12 +8,13 @@ from pybloom_live import BloomFilter
 
 # 下载类
 class Downloads:
-    # pthone ua:user-agent: Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/85.0.4183.102
     headers = {
-        'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/85.0.4183.102'
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'referer': 'https://m.sm.cn/',
+        'user-agent': 'Mozilla/5.0 (Linux; Android 9; SM-N9500 Build/PPR1.180610.011; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/76.0.3809.89 Mobile Safari/537.36 T7/11.20 SP-engine/2.16.0 baiduboxapp/11.20.0.14 (Baidu; P1 9)'
     }
     def download(self,kw,retries=3):
-        query = 'https://m.sm.cn/s?q={}&safe=1&from=smor&snum=6'.format(kw)
+        query = 'https://m.sm.cn/s?q={}&from=smor&safe=1&snum=6'.format(kw)
         try:
             resp = requests.get(query, headers=self.headers, timeout=15)
         except requests.RequestException as err:
@@ -23,7 +24,8 @@ class Downloads:
             if retries > 0:
                 return self.download(kw,retries -1)
                 # 出现异常,则一次休眠5秒
-                time.sleep(5)
+                print('休眠中...')
+                time.sleep(10)
         else:
             resp.encoding = 'utf-8'
             html = resp.text
@@ -52,6 +54,7 @@ class Spider(Thread,Downloads):
                 self.parse_html(source)
             finally:
                 self.key_queue.task_done()
+            time.sleep(3)   #执行完一次休眠3秒
 
     def parse_html(self,source):
         # 推荐2   //div[@class="sider-card relative-keywords"]//ul/li/a/p/span/text()

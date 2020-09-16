@@ -93,29 +93,29 @@ class Save_key(Thread):
             for con in self.contain:
                 if con in wd:
                     if len(wd) >5:
-                        print('得到新词：{}'.format(wd))
+                        print('得到新词：{}\n'.format(wd))
                         self.save_file(wd)
             self.save_queue.task_done()
 
     def save_file(self,wd):
         # 方式一：
-        try:
-            conn = pymysql.Connect(**self.db_config)
-            try:
-                sql = "insert ignore into sogoupcr(keywords) values(%s)"
-                with conn.cursor() as cursor:
-                    cursor.execute(sql, args=(wd))
-            except pymysql.err.Error as err:
-                print('插入数据出错，新词：{},异常：{}'.format(wd, err))
-            else:
-                conn.commit()
-                conn.close()
-        except pymysql.err.MySQLError:
-            print('链接数据库出错!')
+        # try:
+        #     conn = pymysql.Connect(**self.db_config)
+        #     try:
+        #         sql = "insert ignore into sogoupcr(keywords) values(%s)"
+        #         with conn.cursor() as cursor:
+        #             cursor.execute(sql, args=(wd))
+        #     except pymysql.err.Error as err:
+        #         print('插入数据出错，新词：{},异常：{}'.format(wd, err))
+        #     else:
+        #         conn.commit()
+        #         conn.close()
+        # except pymysql.err.MySQLError:
+        #     print('链接数据库出错!')
 
         # 方式二：
-        # with open(self.filename, mode='a', encoding='utf-8') as f:
-        #         f.write('{}\n'.format(wd))
+        with open(self.filename, mode='a', encoding='utf-8') as f:
+                f.write('{}\n'.format(wd))
 
 if __name__ == '__main__':
     key_queue = Queue() #关键词采集列队
@@ -147,7 +147,7 @@ if __name__ == '__main__':
         spider.setDaemon(True)  #设置为背景线程，即程序终止流程即终止
         spider.start()
 
-    # 保存列队,5个线程
+    # 保存列队,不使用线程,使用线程速度太快,容易出现乱码
     for i in range(5):
         savekey = Save_key(save_queue,contain,db_config,filename)
         savekey.setDaemon(True)
