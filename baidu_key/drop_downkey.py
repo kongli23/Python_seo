@@ -135,7 +135,7 @@ if __name__ == '__main__':
     save_queue = Queue()    #保存列队
     filename = "result.txt"  # 结果保存文件名
 
-    for k in open('init.txt','r',encoding='utf-8'):
+    for k in open('init1.txt', 'r', encoding='utf-8'):
         key_queue.put(k.strip())
 
     contain = []    #必须包含词

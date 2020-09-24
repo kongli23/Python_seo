@@ -98,7 +98,7 @@ if __name__ == '__main__':
     filename = 'result.txt'
 
     # 添加起始词
-    for key in open('init.txt','r',encoding='utf-8'):
+    for key in open('init1.txt', 'r', encoding='utf-8'):
         key_queue.put(key.strip())
 
     contain = []    #必须包含词列表

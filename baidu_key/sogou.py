@@ -16,7 +16,7 @@ class Downloads:
     def download(self,kw,retries=3):
         url = 'https://www.sogou.com/web?query={}'.format(kw)
         try:
-            resp = requests.get(url,headers=self.headers,timeout=10)
+            resp = requests.get(url,headers=self.headers,timeout=15)
         except requests.RequestException as err:
             html = None
             print('下载内容异常：{}'.format(err))
@@ -99,23 +99,23 @@ class Save_key(Thread):
 
     def save_file(self,wd):
         # 方式一：
-        # try:
-        #     conn = pymysql.Connect(**self.db_config)
-        #     try:
-        #         sql = "insert ignore into sogoupcr(keywords) values(%s)"
-        #         with conn.cursor() as cursor:
-        #             cursor.execute(sql, args=(wd))
-        #     except pymysql.err.Error as err:
-        #         print('插入数据出错，新词：{},异常：{}'.format(wd, err))
-        #     else:
-        #         conn.commit()
-        #         conn.close()
-        # except pymysql.err.MySQLError:
-        #     print('链接数据库出错!')
+        try:
+            conn = pymysql.Connect(**self.db_config)
+            try:
+                sql = "insert ignore into sys(keywords) values(%s)"
+                with conn.cursor() as cursor:
+                    cursor.execute(sql, args=(wd))
+            except pymysql.err.Error as err:
+                print('插入数据出错，新词：{},异常：{}'.format(wd, err))
+            else:
+                conn.commit()
+                conn.close()
+        except pymysql.err.MySQLError:
+            print('链接数据库出错!')
 
         # 方式二：
-        with open(self.filename, mode='a', encoding='utf-8') as f:
-                f.write('{}\n'.format(wd))
+        # with open(self.filename, mode='a', encoding='utf-8') as f:
+        #         f.write('{}\n'.format(wd))
 
 if __name__ == '__main__':
     key_queue = Queue() #关键词采集列队
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     filename = 'result.txt' #保存文件名
 
     # 向列队中添加初始值
-    for k in open('init.txt', 'r', encoding='utf-8'):
+    for k in open('init1.txt', 'r', encoding='utf-8'):
         key_queue.put(k.strip())
 
     contain = []  # 必须包含词
