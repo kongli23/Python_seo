@@ -104,12 +104,12 @@ class Sava_key(Thread):
 if __name__ == '__main__':
     key_queue = Queue()
     save_queue = Queue()
-    filename = 'baidu_wap.txt'
+    filename = 'baidu_wap_0925.txt'
 
-    for fs in open('wap.txt','r',encoding='utf-8'):
+    for fs in open('init.txt','r',encoding='utf-8'):
         key_queue.put(str.strip(fs))
 
-    for i in range(5):
+    for i in range(10):
         spider = Spider(key_queue,save_queue)
         spider.setDaemon(True)
         spider.start()
