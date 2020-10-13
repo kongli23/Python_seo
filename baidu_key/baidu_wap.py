@@ -56,7 +56,7 @@ class Spider(Thread,Downloads):
                 self.parse_html(source)
 
                 # 处理完一次，休眠3秒
-                time.sleep(3)
+                # time.sleep(3)
             finally:
                 self.key_queue.task_done()
 
@@ -65,14 +65,16 @@ class Spider(Thread,Downloads):
         searchList = ele.xpath('//div[@class="c-row row-item row-item2"]/div/a/span/text()')
         for search in searchList:
             # print('{}'.format(search))
-            self.key_queue.put(search)
-            self.save_queue.put(search)
+            str_search = str(search)    #lxml占用过多内存,转换为字符串并将其存储,这样可以防止整个树被垃圾回收
+            self.key_queue.put(str_search)
+            self.save_queue.put(str_search)
 
         relatedList = ele.xpath('//div[@class="rw-list-new rw-list-new2"]/a/span/text()')
         for related in relatedList:
             # print('{}'.format(related))
-            self.key_queue.put(related)
-            self.save_queue.put(related)
+            str_related = str(related)
+            self.key_queue.put(str_related)
+            self.save_queue.put(str_related)
 
 class Sava_key(Thread):
     def __init__(self,save_queue,filename):
@@ -109,7 +111,7 @@ if __name__ == '__main__':
     for fs in open('wap.txt','r',encoding='utf-8'):
         key_queue.put(str.strip(fs))
 
-    for i in range(5):
+    for i in range(15):
         spider = Spider(key_queue,save_queue)
         spider.setDaemon(True)
         spider.start()
