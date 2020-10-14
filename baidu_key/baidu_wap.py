@@ -5,6 +5,7 @@ from threading import Thread
 from pybloom_live import BloomFilter
 from lxml import etree
 from queue import Queue
+from baidu_key import filter_key
 
 # 下载类
 class Downloads:
@@ -87,14 +88,22 @@ class Sava_key(Thread):
         while True:
             try:
                 kw = save_queue.get()
-                if '实验室' in kw:
-                    # 保存过的词过滤掉
-                    if kw in self.boom:
-                        continue
-                    self.boom.add(kw)
 
-                    print('新词：{}'.format(kw))
-                    self.sava_txt(kw)
+                # 一层过滤，必须包含实验室
+                if '实验室' in kw:
+
+                    # 二层过滤，排除不需要的词
+                    keywords = filter_key.clean_key(kw)
+                    if keywords is None:
+                        continue
+                    else:
+                        # 保存过的词过滤掉
+                        if keywords in self.boom:
+                            continue
+                        self.boom.add(keywords)
+
+                        print('新词：{}'.format(keywords))
+                        self.sava_txt(keywords)
             finally:
                 self.save_queue.task_done()
 
@@ -111,7 +120,7 @@ if __name__ == '__main__':
     for fs in open('wap.txt','r',encoding='utf-8'):
         key_queue.put(str.strip(fs))
 
-    for i in range(15):
+    for i in range(10):
         spider = Spider(key_queue,save_queue)
         spider.setDaemon(True)
         spider.start()

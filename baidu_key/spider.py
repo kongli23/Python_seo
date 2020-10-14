@@ -2,12 +2,11 @@
 import requests
 import time
 import pymysql
-import gc
 from threading import Thread
 from lxml import etree
 from queue import Queue
 from pybloom_live import BloomFilter
-
+from baidu_key import filter_key
 
 # 下载类
 class Downloads:
@@ -78,8 +77,9 @@ class Spider(Thread,Downloads):
         # 相关
         related_list = elt.xpath('//table//tr//th/a/text()')
         for related in related_list:
-            self.key_queue.put(related)
-            self.save_queue.put(related)
+            str_related = str(related)  #将原来的lxml 数据格式转换为 str 防止 lxml 回收，一直采集会不停的占用内存
+            self.key_queue.put(str_related)
+            self.save_queue.put(str_related)
 
 # 保存类
 class Save_key(Thread):
@@ -89,36 +89,48 @@ class Save_key(Thread):
         self.contain = contain  #必须包含词
         self.db_config = db_config    #数据库配置
         self.filename = filename    #保存文件名
+        self.bloom = BloomFilter(capacity=1e7,error_rate=0.001) #关键词重复采集过滤器
 
     def run(self):
         while True:
             wd = self.save_queue.get()
-            for con in self.contain:
-                if con in wd:
-                    if len(wd) >5:
-                        print('得到新词：{}\n'.format(wd))
+
+            # 一层过滤，必须包含实验室
+            if '实验室' in wd:
+
+                # 二层过滤，排除不需要的词
+                keywords = filter_key.clean_key(wd)
+                if keywords is None:
+                    continue
+                else:
+                    # 过滤重复保存过的词
+                    if wd in self.bloom:
+                        continue
+                    else:
+                        self.bloom.add(wd)
+                        print('得到新词：{}'.format(wd))
                         self.save_file(wd)
             self.save_queue.task_done()
 
     def save_file(self,wd):
-        # 方式一：
-        try:
-            conn = pymysql.Connect(**self.db_config)
-            try:
-                sql = "insert ignore into sys(keywords) values(%s)"
-                with conn.cursor() as cursor:
-                    cursor.execute(sql, args=(wd))
-            except pymysql.err.Error as err:
-                print('插入数据出错，新词：{},异常：{}'.format(wd, err))
-            else:
-                conn.commit()
-                conn.close()
-        except pymysql.err.MySQLError:
-            print('链接数据库出错!')
+        # 方式一，数据入库：
+        # try:
+        #     conn = pymysql.Connect(**self.db_config)
+        #     try:
+        #         sql = "insert ignore into sys(keywords) values(%s)"
+        #         with conn.cursor() as cursor:
+        #             cursor.execute(sql, args=(wd))
+        #     except pymysql.err.Error as err:
+        #         print('插入数据出错，新词：{},异常：{}'.format(wd, err))
+        #     else:
+        #         conn.commit()
+        #         conn.close()
+        # except pymysql.err.MySQLError:
+        #     print('链接数据库出错!')
 
-        # 方式二：
-        # with open(self.filename, mode='a', encoding='utf-8') as f:
-        #         f.write('{}\n'.format(wd))
+        # 方式二，写入本地：
+        with open(self.filename, mode='a', encoding='utf-8') as f:
+                f.write('{}\n'.format(wd))
 
 if __name__ == '__main__':
     key_queue = Queue() #关键词采集列队
@@ -144,17 +156,16 @@ if __name__ == '__main__':
         cursorclass=pymysql.cursors.DictCursor
     )
 
-    # 采集列队,10个线程
-    for i in range(10):
+    # 采集列队,15个线程
+    for i in range(15):
         spider = Spider(key_queue,save_queue)
         spider.setDaemon(True)  #设置为背景线程，即程序终止流程即终止
         spider.start()
 
     # 保存列队,不使用线程,使用线程速度太快,容易出现乱码
-    for i in range(5):
-        savekey = Save_key(save_queue,contain,db_config,filename)
-        savekey.setDaemon(True)
-        savekey.start()
+    savekey = Save_key(save_queue,contain,db_config,filename)
+    savekey.setDaemon(True)
+    savekey.start()
 
     key_queue.join()
     save_queue.join()
