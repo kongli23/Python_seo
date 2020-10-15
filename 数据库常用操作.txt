@@ -1,0 +1,24 @@
+create table shiyanshi_key(
+	id int primary key auto_increment,
+	keywords varchar(120),
+	title varchar(255) unique,
+	content text,
+	source varchar(255)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*********************************/
+create table sys(
+	id int primary key auto_increment,
+	keywords varchar(120) unique
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+insert ignore into baidu_search(keywords,title,content,source) values('seo','seo是什么意思标题1','seo是什么意思文章','https://www.baidu.com')
+//清空数据表
+delete from shiyanshi_key;
+//并重置数据表中自增id
+alter table shiyanshi_key auto_increment=1
+select * from shiyanshizhuangxiu
+select id,keywords,title,content from baidu_search limit 0,10000
+select * from shiyanshi_key
+select * from sys where keywords like '%造价%'
+select keywords from sys
