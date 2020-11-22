@@ -31,7 +31,7 @@ def parse_html(html):
 if __name__ == '__main__':
     for i in range(1,51):
         # query = 'https://baidurank.aizhan.com/baidu/ishuo.cn/-1/0/{}/position/1/'.format(i) #PC
-        query = 'https://baidurank.aizhan.com/mobile/ishuo.cn/-1/0/{}/position/1/'.format(i) #移动
+        query = 'https://baidurank.aizhan.com/mobile/www.nnbbb.com/-1/0/{}/position/1/'.format(i) #移动
         source = download(query)
         if source is None:
             continue

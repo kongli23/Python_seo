@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 import requests
-# import chardet
 import cchardet
 import re
 import time
@@ -68,8 +67,9 @@ class Spider_top_50_link(Thread):
         '''
         links = re.compile('<div class="f13  se_st_footer"><a target="_blank" href="(.*?)"').findall(source)
         for url in links:
-            url = url.replace('http://','https://')
-            self.link_queue.put((kw,url))
+            str_url = str(url)  # lxml占用过多内存,转换为字符串并将其存储,这样可以防止整个树被垃圾回收
+            str_url = str_url.replace('http://','https://')
+            self.link_queue.put((kw,str_url))
 
 # 解析得到的快照链接,获取真实文章url地址
 class Decry_url(Thread):

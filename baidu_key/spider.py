@@ -96,7 +96,7 @@ class Save_key(Thread):
             wd = self.save_queue.get()
 
             # 一层过滤，必须包含实验室
-            if '实验室' in wd:
+            if 'sem' or '竟价' in wd:
 
                 # 二层过滤，排除不需要的词
                 keywords = filter_key.clean_key(wd)
